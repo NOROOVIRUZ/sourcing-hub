@@ -7,7 +7,10 @@
     "sync": "tsx scripts/sync.ts"
   },
   "dependencies": {
-    "kordoc": "latest"
+    "@napi-rs/canvas": "latest",
+    "kordoc": "latest",
+    "pdfjs-dist": "^4.0.0",
+    "tesseract.js": "latest"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
