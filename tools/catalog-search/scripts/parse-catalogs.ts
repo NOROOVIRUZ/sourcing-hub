@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const CONFIG_PATH = path.join(process.cwd(), 'catalog-config.json');
-const OUTPUT_PATH = path.join(process.cwd(), 'docs', 'index.json');
+const OUTPUT_PATH = path.join(process.cwd(), '..', '..', 'docs', 'index.json');
 
 interface Config {
   catalog_dir: string;

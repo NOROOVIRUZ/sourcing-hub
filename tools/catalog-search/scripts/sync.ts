@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 
 const ROOT = resolve(process.cwd(), '..', '..');
-const INDEX = 'tools/catalog-search/docs/index.json';
+const INDEX = 'docs/index.json';
 
 function git(cmd: string) {
   execSync(`git -C "${ROOT}" ${cmd}`, { stdio: 'inherit' });
