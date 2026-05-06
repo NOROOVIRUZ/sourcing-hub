@@ -2,8 +2,12 @@ import { parse } from 'kordoc';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const CONFIG_PATH = path.join(process.cwd(), 'catalog-config.json');
-const OUTPUT_PATH = path.join(process.cwd(), '..', '..', 'docs', 'index.json');
+const SCRIPT_DIR = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Z]:)/, '$1'));
+const TOOL_ROOT = path.resolve(SCRIPT_DIR, '..');
+const REPO_ROOT = path.resolve(TOOL_ROOT, '..', '..');
+const CONFIG_PATH = path.join(TOOL_ROOT, 'catalog-config.json');
+const OUTPUT_PATH = path.join(REPO_ROOT, 'docs', 'index.json');
+console.log('📁 출력 경로:', OUTPUT_PATH);
 
 interface Config {
   catalog_dir: string;
