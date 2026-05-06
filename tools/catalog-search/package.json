@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "parse": "tsx scripts/parse-catalogs.ts"
+    "parse": "tsx scripts/parse-catalogs.ts",
+    "sync": "tsx scripts/sync.ts"
   },
   "dependencies": {
     "kordoc": "latest"
