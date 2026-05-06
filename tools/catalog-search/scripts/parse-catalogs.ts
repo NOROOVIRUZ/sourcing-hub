@@ -20,25 +20,40 @@ function extractSupplier(filename: string): string {
   return filename.replace(/\.pdf$/i, '').split(/[_\s\-]/)[0];
 }
 
-async function ocrPdf(buffer: Buffer): Promise<string> {
-  const pdfjsLib = (await import('pdfjs-dist/legacy/build/pdf.mjs')) as any;
-  const data = new Uint8Array(buffer);
-  const doc = await pdfjsLib.getDocument({ data }).promise;
+async function ocrPdf(filepath: string, buffer: Buffer): Promise<string> {
+  console.log('  tesseract OCR 시작...');
   const worker = await createWorker('eng');
-  let allText = '';
-  for (let i = 1; i <= doc.numPages; i++) {
-    const page = await doc.getPage(i);
-    const viewport = page.getViewport({ scale: 2 });
-    const canvas = createCanvas(viewport.width, viewport.height);
-    const ctx = canvas.getContext('2d');
-    await page.render({ canvasContext: ctx as any, viewport }).promise;
-    const imgBuf = canvas.toBuffer('image/png');
-    const { data: { text } } = await worker.recognize(imgBuf);
-    allText += text + '\n';
-    console.log(`  OCR ${i}/${doc.numPages}페이지`);
+  try {
+    // 방법 1: 파일 경로 직접 전달
+    const { data: { text } } = await worker.recognize(filepath);
+    if (text.trim()) return text;
+  } catch (e: any) {
+    console.log('  직접 인식 실패, 이미지 변환 시도...');
   }
-  await worker.terminate();
-  return allText;
+
+  // 방법 2: canvas로 페이지별 렌더링
+  try {
+    const pdfjsLib = (await import('pdfjs-dist/legacy/build/pdf.mjs')) as any;
+    const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+    let allText = '';
+    for (let i = 1; i <= doc.numPages; i++) {
+      const page = await doc.getPage(i);
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = createCanvas(viewport.width, viewport.height);
+      const ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx as any, viewport }).promise;
+      const imgBuf = canvas.toBuffer('image/png');
+      const { data: { text } } = await worker.recognize(imgBuf);
+      allText += text + '\n';
+      console.log(`  OCR ${i}/${doc.numPages}페이지`);
+    }
+    return allText;
+  } catch (e: any) {
+    console.error('  OCR 실패:', e.message);
+    return '';
+  } finally {
+    await worker.terminate();
+  }
 }
 
 async function main() {
@@ -87,8 +102,7 @@ async function main() {
         text = result.markdown || '';
         pages = result.metadata?.pageCount || 0;
         if (!text.trim() || (result as any).isImageBased) {
-          console.log('  이미지 기반 — OCR 시작...');
-          text = await ocrPdf(buffer);
+          text = await ocrPdf(filepath, buffer);
         }
       }
       catalogs.push({
